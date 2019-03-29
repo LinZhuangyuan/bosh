@@ -59,6 +59,14 @@ module Bosh::Director
         false
       end
 
+      def vip?
+        false
+      end
+
+      def dynamic?
+        false
+      end
+
       def managed?
         false
       end

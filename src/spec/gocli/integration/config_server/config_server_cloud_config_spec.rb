@@ -6,7 +6,7 @@ describe 'using director with config server', type: :integration do
     {
       'name' => 'simple',
       'director_uuid' => 'deadbeef',
-      'releases' => [{ 'name' => 'bosh-release', 'version' => '0.1-dev' }],
+      'releases' => [{'name' => 'bosh-release', 'version' => '0.1-dev'}],
       'update' => {
         'canaries' => 2,
         'canary_watch_time' => 4000,
@@ -31,21 +31,21 @@ describe 'using director with config server', type: :integration do
         'azs' => ['z1'],
         'stemcell' => 'default',
       }],
-      'stemcells' => [{ 'alias' => 'default', 'os' => 'toronto-os', 'version' => '1' }],
+      'stemcells' => [{'alias' => 'default', 'os' => 'toronto-os', 'version' => '1'}],
     }
   end
 
   let(:networks) do
-    [{ 'name' => 'private' }]
+    [{'name' => 'private'}]
   end
 
   let(:client_env) do
-    { 'BOSH_CLIENT' => 'test', 'BOSH_CLIENT_SECRET' => 'secret', 'BOSH_CA_CERT' => current_sandbox.certificate_path.to_s }
+    {'BOSH_CLIENT' => 'test', 'BOSH_CLIENT_SECRET' => 'secret', 'BOSH_CA_CERT' => current_sandbox.certificate_path.to_s}
   end
   let(:config_server_helper) { Bosh::Spec::ConfigServerHelper.new(current_sandbox, logger) }
 
   let(:log_options) do
-    { include_credentials: false, env: client_env }
+    {include_credentials: false, env: client_env}
   end
 
   def bosh_run_cck_with_resolution(num_errors, option = 1, env = {})
@@ -76,36 +76,36 @@ describe 'using director with config server', type: :integration do
         config_server_helper.put_value('/z3_variable_name', 'my_name')
         config_server_helper.put_value('/ephemeral_disk_placeholder', 'size' => '3000', 'type' => 'gp2')
         config_server_helper.put_value('/disk_types_placeholder',
-                                       [
-                                         {
-                                           'name' => 'small',
-                                           'disk_size' => 3000,
-                                           'cloud_properties' => { 'type' => 'gp2' },
-                                         }, {
-                                           'name' => 'large',
-                                           'disk_size' => 50_000,
-                                           'cloud_properties' => { 'type' => 'gp2' },
-                                         }
-                                       ])
+          [
+            {
+              'name' => 'small',
+              'disk_size' => 3000,
+              'cloud_properties' => {'type' => 'gp2'},
+            }, {
+            'name' => 'large',
+            'disk_size' => 50_000,
+            'cloud_properties' => {'type' => 'gp2'},
+          }
+          ])
         config_server_helper.put_value('/subnets_placeholder',
-                                       [
-                                         {
-                                           'range' => '10.10.0.0/24',
-                                           'gateway' => '10.10.0.1',
-                                           'az' => 'z1',
-                                           'static' => ['10.10.0.62'],
-                                           'dns' => ['10.10.0.2'],
-                                           'cloud_properties' => { 'subnet' => 'subnet-f2744a86' },
-                                         },
-                                         {
-                                           'range' => '10.10.64.0/24',
-                                           'gateway' => '10.10.64.1',
-                                           'az' => 'z2',
-                                           'static' => ['10.10.64.121', '10.10.64.122'],
-                                           'dns' => ['10.10.0.2'],
-                                           'cloud_properties' => { 'subnet' => 'subnet-eb8bd3ad' },
-                                         },
-                                       ])
+          [
+            {
+              'range' => '10.10.0.0/24',
+              'gateway' => '10.10.0.1',
+              'az' => 'z1',
+              'static' => ['10.10.0.62'],
+              'dns' => ['10.10.0.2'],
+              'cloud_properties' => {'subnet' => 'subnet-f2744a86'},
+            },
+            {
+              'range' => '10.10.64.0/24',
+              'gateway' => '10.10.64.1',
+              'az' => 'z2',
+              'static' => ['10.10.64.121', '10.10.64.122'],
+              'dns' => ['10.10.0.2'],
+              'cloud_properties' => {'subnet' => 'subnet-eb8bd3ad'},
+            },
+          ])
         config_server_helper.put_value('/workers_placeholder', 5)
       end
 
@@ -113,7 +113,7 @@ describe 'using director with config server', type: :integration do
         deploy_from_scratch(no_login: true, manifest_hash: manifest_hash, cloud_config_hash: cloud_config, include_credentials: false, env: client_env)
 
         create_vm_invocations = current_sandbox.cpi.invocations_for_method('create_vm')
-        expect(create_vm_invocations.last.inputs['cloud_properties']).to eq('availability_zone' => 'us-east-1a', 'ephemeral_disk' => { 'size' => '3000', 'type' => 'gp2' }, 'instance_type' => 'm3.medium')
+        expect(create_vm_invocations.last.inputs['cloud_properties']).to eq('availability_zone' => 'us-east-1a', 'ephemeral_disk' => {'size' => '3000', 'type' => 'gp2'}, 'instance_type' => 'm3.medium')
 
         create_disk_invocations = current_sandbox.cpi.invocations_for_method('create_disk')
         expect(create_disk_invocations.last.inputs['size']).to eq(50_000)
@@ -128,7 +128,7 @@ describe 'using director with config server', type: :integration do
         context 'variable values were changed' do
           before do
             config_server_helper.put_value('/z1_cloud_properties', 'availability_zone' => 'us-mid-west')
-            config_server_helper.put_value('/disk_types_placeholder', [{ 'name' => 'large', 'disk_size' => 100_000, 'cloud_properties' => { 'type' => 'gp1' } }])
+            config_server_helper.put_value('/disk_types_placeholder', [{'name' => 'large', 'disk_size' => 100_000, 'cloud_properties' => {'type' => 'gp1'}}])
           end
 
           context 'deployment has unresponsive agents' do
@@ -144,7 +144,7 @@ describe 'using director with config server', type: :integration do
 
               invocations = current_sandbox.cpi.invocations.drop(pre_kill_invocations_size)
               create_vm_invocation = invocations.select { |invocation| invocation.method_name == 'create_vm' }.last
-              expect(create_vm_invocation.inputs['cloud_properties']).to eq('availability_zone' => 'us-east-1a', 'ephemeral_disk' => { 'size' => '3000', 'type' => 'gp2' }, 'instance_type' => 'm3.medium')
+              expect(create_vm_invocation.inputs['cloud_properties']).to eq('availability_zone' => 'us-east-1a', 'ephemeral_disk' => {'size' => '3000', 'type' => 'gp2'}, 'instance_type' => 'm3.medium')
             end
           end
 
@@ -158,7 +158,7 @@ describe 'using director with config server', type: :integration do
             invocations = current_sandbox.cpi.invocations.drop(pre_start_invocations_size)
 
             create_vm_invocation = invocations.select { |invocation| invocation.method_name == 'create_vm' }.last
-            expect(create_vm_invocation.inputs['cloud_properties']).to eq('availability_zone' => 'us-east-1a', 'ephemeral_disk' => { 'size' => '3000', 'type' => 'gp2' }, 'instance_type' => 'm3.medium')
+            expect(create_vm_invocation.inputs['cloud_properties']).to eq('availability_zone' => 'us-east-1a', 'ephemeral_disk' => {'size' => '3000', 'type' => 'gp2'}, 'instance_type' => 'm3.medium')
           end
 
           it 'should use the new variable values on redeploy' do
@@ -167,7 +167,7 @@ describe 'using director with config server', type: :integration do
             invocations = current_sandbox.cpi.invocations.drop(pre_second_deploy_invocations_size)
 
             create_vm_invocation = invocations.select { |invocation| invocation.method_name == 'create_vm' }.last
-            expect(create_vm_invocation.inputs['cloud_properties']).to eq('availability_zone' => 'us-mid-west', 'ephemeral_disk' => { 'size' => '3000', 'type' => 'gp2' }, 'instance_type' => 'm3.medium')
+            expect(create_vm_invocation.inputs['cloud_properties']).to eq('availability_zone' => 'us-mid-west', 'ephemeral_disk' => {'size' => '3000', 'type' => 'gp2'}, 'instance_type' => 'm3.medium')
 
             create_disk_invocation = invocations.select { |invocation| invocation.method_name == 'create_disk' }.last
             expect(create_disk_invocation.inputs['cloud_properties']).to eq('type' => 'gp1')
@@ -194,13 +194,13 @@ describe 'using director with config server', type: :integration do
             invocations = current_sandbox.cpi.invocations.drop(pre_second_deploy_invocations_size)
 
             create_vm_invocation = invocations.select { |invocation| invocation.method_name == 'create_vm' }.last
-            expect(create_vm_invocation.inputs['cloud_properties']).to eq('availability_zone' => 'us-east-1a', 'ephemeral_disk' => { 'size' => '2000', 'type' => 'gp1' }, 'instance_type' => 'm3.medium')
+            expect(create_vm_invocation.inputs['cloud_properties']).to eq('availability_zone' => 'us-east-1a', 'ephemeral_disk' => {'size' => '2000', 'type' => 'gp1'}, 'instance_type' => 'm3.medium')
           end
         end
 
         context 'cloud property variable is deleted and recreated' do
           let(:networks) do
-            [{ 'name' => 'private', 'default' => %w[gateway dns] }, { 'name' => 'other' }]
+            [{'name' => 'private', 'default' => %w[gateway dns]}, {'name' => 'other'}]
           end
 
           before do
@@ -258,7 +258,7 @@ describe 'using director with config server', type: :integration do
       {
         'name' => 'simple',
         'director_uuid' => 'deadbeef',
-        'releases' => [{ 'name' => 'bosh-release', 'version' => '0.1-dev' }],
+        'releases' => [{'name' => 'bosh-release', 'version' => '0.1-dev'}],
         'update' => {
           'canaries' => 2,
           'canary_watch_time' => 4000,
@@ -276,14 +276,14 @@ describe 'using director with config server', type: :integration do
             },
           }],
           'instances' => 1,
-          'networks' => [{ 'name' => 'private' }],
+          'networks' => [{'name' => 'private'}],
           'properties' => {},
           'vm_type' => 'small',
           'persistent_disk_type' => 'small',
           'azs' => ['z1'],
           'stemcell' => 'default',
         }],
-        'stemcells' => [{ 'alias' => 'default', 'os' => 'toronto-os', 'version' => '1' }],
+        'stemcells' => [{'alias' => 'default', 'os' => 'toronto-os', 'version' => '1'}],
       }
     end
 
@@ -326,13 +326,13 @@ describe 'using director with config server', type: :integration do
       {
         'name' => 'foo-deployment',
         'director_uuid' => nil,
-        'releases' => [{ 'name' => 'bosh-release', 'version' => 'latest' }],
+        'releases' => [{'name' => 'bosh-release', 'version' => 'latest'}],
         'jobs' => [
           {
             'azs' => ['z1'],
             'instances' => 1,
             'name' => 'hjMOn',
-            'networks' => [{ 'name' => 'j6XUS1M', 'static_ips' => ['192.168.3.246'] }],
+            'networks' => [{'name' => 'j6XUS1M', 'static_ips' => ['192.168.3.246']}],
             'vm_type' => 'dMF8vIexnI',
             'templates' => [{
               'name' => 'foobar',
@@ -347,7 +347,7 @@ describe 'using director with config server', type: :integration do
           'max_in_flight' => 100,
           'update_watch_time' => 20,
         },
-        'stemcells' => [{ 'os' => 'toronto-os', 'version' => 1, 'alias' => 'default' }],
+        'stemcells' => [{'os' => 'toronto-os', 'version' => 1, 'alias' => 'default'}],
       }
     end
 
@@ -355,11 +355,11 @@ describe 'using director with config server', type: :integration do
       {
         'azs' => [
           {
-            'cloud_properties' => { 'hz4RwVr' => '((/moVsfGUa))' },
+            'cloud_properties' => {'hz4RwVr' => '((/moVsfGUa))'},
             'name' => 'z1',
           },
         ],
-        'compilation' => { 'network' => 'cAknaSb', 'workers' => 1 },
+        'compilation' => {'network' => 'cAknaSb', 'workers' => 1},
         'networks' => [
           {
             'name' => 'j6XUS1M',
@@ -391,7 +391,7 @@ describe 'using director with config server', type: :integration do
             'type' => 'dynamic',
           },
         ],
-        'vm_types' => [{ 'cloud_properties' => {}, 'name' => 'dMF8vIexnI' }],
+        'vm_types' => [{'cloud_properties' => {}, 'name' => 'dMF8vIexnI'}],
       }
     end
 
@@ -536,7 +536,7 @@ describe 'using director with config server', type: :integration do
       {
         'name' => 'my-dep',
         'director_uuid' => 'deadbeef',
-        'releases' => [{ 'name' => 'bosh-release', 'version' => '0.1-dev' }],
+        'releases' => [{'name' => 'bosh-release', 'version' => '0.1-dev'}],
         'update' => {
           'canaries' => 2,
           'canary_watch_time' => 4000,
@@ -557,7 +557,7 @@ describe 'using director with config server', type: :integration do
               },
             ],
             'instances' => 1,
-            'networks' => [{ 'name' => 'private' }],
+            'networks' => [{'name' => 'private'}],
             'vm_extensions' => ['vm-extension-1'],
             'vm_type' => 'small',
             'persistent_disk_type' => 'normal_disk',
@@ -565,15 +565,15 @@ describe 'using director with config server', type: :integration do
             'stemcell' => 'default',
           },
         ],
-        'stemcells' => [{ 'alias' => 'default', 'os' => 'toronto-os', 'version' => '1' }],
+        'stemcells' => [{'alias' => 'default', 'os' => 'toronto-os', 'version' => '1'}],
       }
     end
 
     let(:cloud_config_hash) do
       {
         'azs' => [
-          { 'name' => 'z1', 'cloud_properties' => {} },
-          { 'name' => 'z2', 'cloud_properties' => {} },
+          {'name' => 'z1', 'cloud_properties' => {}},
+          {'name' => 'z2', 'cloud_properties' => {}},
         ],
 
         'vm_types' => [
@@ -599,7 +599,7 @@ describe 'using director with config server', type: :integration do
           },
         ],
 
-        'vm_extensions' => [{ 'name' => 'vm-extension-1', 'cloud_properties' => {} }],
+        'vm_extensions' => [{'name' => 'vm-extension-1', 'cloud_properties' => {}}],
 
         'networks' => [
           {
@@ -614,13 +614,13 @@ describe 'using director with config server', type: :integration do
                 'dns' => ['10.10.0.2'],
                 'cloud_properties' => {},
               }, {
-                'range' => '10.10.64.0/24',
-                'gateway' => '10.10.64.1',
-                'az' => 'z2',
-                'static' => ['10.10.64.121', '10.10.64.122'],
-                'dns' => ['10.10.0.2'],
-                'cloud_properties' => {},
-              }
+              'range' => '10.10.64.0/24',
+              'gateway' => '10.10.64.1',
+              'az' => 'z2',
+              'static' => ['10.10.64.121', '10.10.64.122'],
+              'dns' => ['10.10.0.2'],
+              'cloud_properties' => {},
+            }
             ],
           },
           {
@@ -642,7 +642,7 @@ describe 'using director with config server', type: :integration do
 
     context 'azs cloud_properties' do
       before do
-        cloud_config_hash['azs'][0]['cloud_properties'] = { 'smurf_1' => '((/smurf_1_variable))' }
+        cloud_config_hash['azs'][0]['cloud_properties'] = {'smurf_1' => '((/smurf_1_variable))'}
         config_server_helper.put_value('/smurf_1_variable', 'cat_1')
       end
 
@@ -759,7 +759,7 @@ describe 'using director with config server', type: :integration do
 
     context 'vm_extensions cloud_properties' do
       before do
-        cloud_config_hash['vm_extensions'][0]['cloud_properties'] = { 'smurf_1' => '((/smurf_1_variable_vm_extension))' }
+        cloud_config_hash['vm_extensions'][0]['cloud_properties'] = {'smurf_1' => '((/smurf_1_variable_vm_extension))'}
         config_server_helper.put_value('/smurf_1_variable_vm_extension', 'cat_1_vm_extension')
       end
 
@@ -816,7 +816,7 @@ describe 'using director with config server', type: :integration do
 
     context 'disk_types cloud_properties' do
       before do
-        cloud_config_hash['disk_types'][0]['cloud_properties'] = { 'smurf_1' => '((/smurf_1_variable))' }
+        cloud_config_hash['disk_types'][0]['cloud_properties'] = {'smurf_1' => '((/smurf_1_variable))'}
         config_server_helper.put_value('/smurf_1_variable', 'cat_1_disk')
       end
 
@@ -883,7 +883,7 @@ describe 'using director with config server', type: :integration do
                   'range' => '10.10.0.0/24',
                   'gateway' => '10.10.0.1',
                   'az' => 'z1',
-                  'static' => ['10.10.0.62'],
+                  'static' => ['10.10.0.62' 'q-ewwe.63'],
                   'dns' => ['10.10.0.2'],
                   'cloud_properties' => {
                     'smurf_1' => '((/smurf_1_variable_manual_network))',
@@ -1046,6 +1046,7 @@ describe 'using director with config server', type: :integration do
               'cloud_properties' => {
                 'smurf_1' => '((/smurf_1_variable_vip_network))',
               },
+              'subnets' => [{ 'azs' => ['z1'],'static' => ['8.8.8.8']}]
             },
           ]
         end
@@ -1059,7 +1060,6 @@ describe 'using director with config server', type: :integration do
             },
             {
               'name' => 'vip',
-              'static_ips' => ['8.8.8.8'],
             },
           ]
           config_server_helper.put_value('/smurf_1_variable_vip_network', 'cat_1_vip_network')

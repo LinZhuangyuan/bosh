@@ -132,6 +132,10 @@ module Bosh::Director
         availability_zones
       end
 
+      def dynamic?
+        true
+      end
+
       private
 
       def find_subnet_for_az(az_name)

@@ -28,7 +28,7 @@ describe Bosh::Director::DeploymentPlan::ManualNetwork do
       network_spec,
       [
         BD::DeploymentPlan::AvailabilityZone.new('zone_1', {}),
-        BD::DeploymentPlan::AvailabilityZone.new('zone_2', {})
+        BD::DeploymentPlan::AvailabilityZone.new('zone_2', {}),
       ],
       global_network_resolver,
       logger

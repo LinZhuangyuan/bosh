@@ -50,6 +50,9 @@ describe 'vip networks', type: :integration do
 
       new_instances = director.instances
       expect(new_instances.size).to eq(2)
+      # expect(new_instances(&:ips)).to match_array(['69.69.69.69', '68.68.68.68'])
+      puts new_instances.first.ips
+      puts new_instances.last.ips
 
       instance_with_original_vip = new_instances.find { |new_instance| new_instance.ips.include?('69.69.69.69') }
       expect(instance_with_original_vip.id).to eq(original_instances.first.id)
@@ -134,6 +137,29 @@ describe 'vip networks', type: :integration do
       bosh_runner.run('delete-deployment', deployment_name: 'simple')
 
       deploy_simple_manifest(manifest_hash: simple_manifest, recreate: true)
+      new_instances = director.instances
+      expect(new_instances.size).to eq(1)
+      expect(new_instances.first.ips).to eq(['192.168.1.2', '69.69.69.69'])
+    end
+
+    it 'reuses ips when the network is renamed in cloud config' do
+      deploy_simple_manifest(manifest_hash: simple_manifest)
+
+      original_instances = director.instances
+      expect(original_instances.size).to eq(1)
+      expect(original_instances.first.ips).to eq(['192.168.1.2', '69.69.69.69'])
+
+      cloud_config_hash['networks'][1]['name'] = 'vip-network2'
+      cloud_config_hash['networks'][1]['subnets'] = [{ 'static' => ['68.68.68.68', '69.69.69.69'] }]
+      upload_cloud_config(cloud_config_hash: cloud_config_hash)
+
+      manifest_with_renamed_vip_network = simple_manifest
+      manifest_with_renamed_vip_network['instance_groups'].first['networks'] = [
+        { 'name' => cloud_config_hash['networks'].first['name'], 'default' => %w[dns gateway] },
+        { 'name' => 'vip-network2' },
+      ]
+
+      deploy_simple_manifest(manifest_hash: manifest_with_renamed_vip_network, recreate: true)
       new_instances = director.instances
       expect(new_instances.size).to eq(1)
       expect(new_instances.first.ips).to eq(['192.168.1.2', '69.69.69.69'])

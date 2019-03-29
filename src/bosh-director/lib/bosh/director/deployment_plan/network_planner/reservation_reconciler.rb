@@ -13,6 +13,8 @@ module Bosh::Director::DeploymentPlan
         reconciled_reservations = []
 
         existing_reservations.each do |existing_reservation|
+
+          next unless existing_reservation.reserved?
           # can't reuse a reservation if it switches az
           unless az_is_desired(existing_reservation)
             @logger.debug(
@@ -27,7 +29,7 @@ module Bosh::Director::DeploymentPlan
               (reservation.dynamic? || reservation.ip == existing_reservation.ip)
           end
 
-          if desired_reservation && existing_reservation.reserved?
+          if desired_reservation
             @logger.debug(
               "For desired reservation #{desired_reservation} found existing reservation " \
               "on the same network #{existing_reservation}",
@@ -89,8 +91,9 @@ module Bosh::Director::DeploymentPlan
 
       def reservation_contains_assigned_address?(existing_reservation, desired_reservation)
         return true if existing_reservation.network == desired_reservation.network
-        return false unless desired_reservation.network.manual?
-        return false unless existing_reservation.network.manual?
+
+        return false if desired_reservation.network.dynamic?
+        return false if existing_reservation.network.dynamic?
 
         desired_reservation.network.subnets.any? do |subnet|
           if existing_reservation.instance_model.availability_zone != '' && !subnet.availability_zone_names.nil?

@@ -11,6 +11,7 @@ describe Bosh::Director::DeploymentPlan::InstanceRepository do
     BD::Models::VariableSet.create(deployment: model)
     instance_double('Bosh::Director::DeploymentPlan::Planner',
       network: network,
+      networks: [network],
       ip_provider: ip_provider,
       model: model
     )
@@ -76,7 +77,7 @@ describe Bosh::Director::DeploymentPlan::InstanceRepository do
       context 'when instance does not have reservations in database' do
         context 'when instance has reservations on dynamic networks' do
           let(:instance_spec) do
-            { 'networks' => { 'name-7' => { 'type' => 'dynamic', 'ip' => '10.10.0.10' } } }
+            {'networks' => {'name-7' => {'type' => 'dynamic', 'ip' => '10.10.0.10'}}}
           end
 
           it 'creates reservations from state' do
