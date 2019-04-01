@@ -36,7 +36,7 @@ module Bosh::Director
       end
 
       it 'allows Basic HTTP Auth with admin/admin credentials for ' +
-          "test purposes (even though user doesn't exist)" do
+        "test purposes (even though user doesn't exist)" do
         basic_authorize 'admin', 'admin'
         get '/'
         expect(last_response.status).to eq(200)
@@ -149,13 +149,13 @@ module Bosh::Director
 
               let!(:all_tasks) do # one task of every type
                 (
-                Bosh::Director::Jobs.constants.inject([]) { |memo, const|
-                  klass = Bosh::Director::Jobs.const_get(const)
-                  if klass.ancestors.include?(Bosh::Director::Jobs::BaseJob)
-                    memo << klass
-                  end
-                  memo
-                } - [Bosh::Director::Jobs::BaseJob]
+                  Bosh::Director::Jobs.constants.inject([]) { |memo, const|
+                    klass = Bosh::Director::Jobs.const_get(const)
+                    if klass.ancestors.include?(Bosh::Director::Jobs::BaseJob)
+                      memo << klass
+                    end
+                    memo
+                  } - [Bosh::Director::Jobs::BaseJob]
                 ).map(&:job_type).map { |job_type|
                   Models::Task.make(type: job_type)
                 }
@@ -567,11 +567,11 @@ module Bosh::Director
 
             before(:each) do
               Models::Deployment.create_with_teams(:name => deployment_name_1,
-                :teams => [team_rocket, dev]
-              )
+                                                   :teams => [team_rocket, dev]
+                                                  )
               Models::Deployment.create_with_teams(:name => deployment_name_2,
-                :teams => [team_rocket]
-              )
+                                                   :teams => [team_rocket]
+                                                  )
               basic_authorize 'dev-team-member', 'dev-team-member'
             end
 
@@ -622,6 +622,98 @@ module Bosh::Director
               end
             end
           end
+        end
+
+        describe 'POST /cancel' do
+
+          let(:state) { :queued }
+          let!(:tasks_queued) do
+            [Models::Task.make(
+              type: :update_deployment,
+              state: state,
+            ),
+            Models::Task.make(
+              type: :scan_and_fix,
+              state: state,
+            )]
+          end
+          let!(:task_processing) do
+            Models::Task.make(
+              type: :update_deployment,
+              state: :processing,
+            )
+          end
+
+          before do
+            basic_authorize 'admin', 'admin'
+            post( '/cancel', JSON.dump(body), 'CONTENT_TYPE' => 'application/json' )
+          end
+
+          context 'without filter' do
+            let(:body) { nil }
+            it 'updates all queued tasks to be state cancelling' do
+              tasks_queued.each do |task|
+                expect(task.reload.state).to eq('cancelling')
+              end
+              expect(task_processing.reload.state).to eq('processing')
+            end
+
+            it 'responds with status 204' do
+              expect(last_response.status).to eq(204)
+            end
+          end
+
+          context 'with filter on state cancelled' do
+            let(:body) { { 'state' => 'cancelled' } }
+            let!(:task_cancelled) do
+              Models::Task.make(
+                type: :update_deployment,
+                state: :cancelled,
+              )
+            end
+
+            it 'does not change task states' do
+              tasks_queued.each do |t|
+                expect(t.reload.state).to eq('queued')
+              end
+              expect(task_processing.reload.state).to eq('processing')
+              expect(task_cancelled.reload.state).to eq('cancelled')
+            end
+
+            it 'responds with status 204' do
+              expect(last_response.status).to eq(204)
+            end
+          end
+
+          context 'with filter on state processing' do
+            let(:body) { { 'state' => 'processing' } }
+            it 'updates all processed tasks to be state cancelling' do
+              tasks_queued.each do |t|
+                expect(t.reload.state).to eq('queued')
+              end
+              expect(task_processing.reload.state).to eq('cancelling')
+            end
+
+            it 'responds with status 204' do
+              expect(last_response.status).to eq(204)
+            end
+          end
+
+          context 'with filter on type scan_and_fix' do
+            context 'without filter on state' do
+              let(:body) { { 'type' => 'scan_and_fix' } }
+              it 'updates queued scan_and_fix tasks to be state cancelling' do
+                expect(tasks_queued[0].reload.state).to eq('queued')
+                expect(tasks_queued[1].reload.state).to eq('cancelling')
+                expect(task_processing.reload.state).to eq('processing')
+              end
+
+              it 'responds with status 204' do
+                expect(last_response.status).to eq(204)
+              end
+            end
+          end
+
         end
       end
     end

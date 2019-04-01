@@ -51,4 +51,42 @@ describe Bosh::Director::Api::TaskManager do
       manager.log_file(task, 'cpi')
     end
   end
+
+  describe '#cancel' do
+    let(:state) { :processing }
+    let!(:task) do
+      Bosh::Director::Models::Task.make(
+        type: :update_deployment,
+        state: state,
+      )
+    end
+
+    context 'when task can be cancelled' do
+      it 'updates the task to be state cancelling' do
+        allow(task).to receive_messages(cancellable?: true)
+
+        manager.cancel(task)
+
+        expect(task.reload.state).to eq('cancelling')
+      end
+    end
+  end
+
+  describe '#cancel_tasks' do
+    let(:state) { :timeout }
+    let!(:task) do
+      Bosh::Director::Models::Task.make(
+        type: :update_deployment,
+        state: state,
+      )
+    end
+
+    it 'logs non-cancellable tasks' do
+      allow(task).to receive_messages(cancellable?: false)
+
+      expect(logger).to receive(:info).with("Cannot cancel task 1: invalid state (#{state})")
+
+      manager.cancel_tasks([task])
+    end
+  end
 end
